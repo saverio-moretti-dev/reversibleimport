@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ReversibleImport;
 
+use Cache;
 use Db;
 use Hook;
 
@@ -104,6 +105,9 @@ final class PrestaShopCatalogRepository implements CatalogRepository
         $this->execute('UPDATE `' . _DB_PREFIX_ . 'stock_available` SET quantity = ' . $quantity . '
             WHERE id_product = ' . $productId . ' AND id_product_attribute = 0 AND id_shop = ' . $this->shopId);
         $this->pendingQuantityHooks[$productId] = $quantity;
+        // PrestaShop tiene la quantità letta in una cache della richiesta: senza pulirla,
+        // chi la legge dopo (anche i moduli avvisati dall'hook) vedrebbe il valore vecchio.
+        Cache::clean('StockAvailable::getQuantityAvailableByProduct_' . $productId . '-*');
     }
 
     public function createBatch(string $fileName, int $changeCount): int
@@ -154,7 +158,8 @@ final class PrestaShopCatalogRepository implements CatalogRepository
 
     public function currentValues(int $productId): ?array
     {
-        $row = $this->db->getRow(
+        // executeS e non getRow: getRow aggiunge «LIMIT 1» dopo il FOR UPDATE, e la query non è più valida.
+        $rows = $this->db->executeS(
             'SELECT ps.price, sa.quantity
             FROM `' . _DB_PREFIX_ . 'product_shop` ps
             INNER JOIN `' . _DB_PREFIX_ . 'stock_available` sa
@@ -162,6 +167,7 @@ final class PrestaShopCatalogRepository implements CatalogRepository
             WHERE ps.id_product = ' . $productId . ' AND ps.id_shop = ' . $this->shopId . '
             FOR UPDATE'
         );
+        $row = $rows[0] ?? null;
 
         return $row ? ['price' => (float) $row['price'], 'quantity' => (int) $row['quantity']] : null;
     }

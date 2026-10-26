@@ -21,7 +21,7 @@ Il file: colonne `riferimento; prezzo; quantità` (accetta anche `reference`, `s
 - Negozio singolo; prodotti senza combinazioni (la loro quantità è la somma delle varianti, va gestita a parte). Un riferimento usato da più prodotti viene saltato.
 - Solo prezzo e quantità.
 - Scrive con SQL diretto, non con `Product::save()`, per non riscrivere l'intero prodotto e non lanciare hook dentro una transazione che può ancora essere annullata. L'hook `actionUpdateQuantity` parte dopo il commit, una volta per prodotto. Altri moduli che ascoltano il salvataggio del prodotto non vengono avvisati del cambio di prezzo.
-- **Stato:** la logica (lettura del file, anteprima, scrittura, ritorno indietro) è coperta da test automatici. Il modulo non è ancora stato installato su un PrestaShop di prova.
+- **Stato:** versione 0.1.0. Provata su PrestaShop 8.1.7 con i prodotti demo (vedi sotto). Il caricamento del file dalla pagina del back office non è ancora stato provato da browser: la pagina è controllata solo nel template.
 
 ## Come è fatto
 
@@ -47,6 +47,18 @@ vendor/bin/phpunit
 ```
 
 Girano anche a ogni push (GitHub Actions, PHP 8.1 e 8.3).
+
+### Prova su un PrestaShop vero
+
+`tests/integration/run.php` gira dentro un negozio di prova (mai in produzione: scrive sul catalogo). Usa i prodotti demo e controlla 19 cose: scheda e tabelle create, anteprima che non scrive niente, prezzo scritto in `product` e `product_shop`, quantità in `stock_available`, fotografia, ritorno indietro con una vendita arrivata nel mezzo (la vendita resta), import bloccato se l'anteprima è superata, pagina del back office. Esito su PrestaShop 8.1.7, PHP 8.1, MariaDB: 19/19. La disinstallazione non lascia tabelle.
+
+```
+php modules/reversibleimport/tests/integration/run.php
+```
+
+La prova sul negozio vero ha trovato due errori che i test in memoria non potevano vedere:
+- `Db::getRow()` aggiunge `LIMIT 1` in fondo alla query: dopo un `FOR UPDATE` la query non è più valida;
+- PrestaShop tiene la quantità letta in una cache della richiesta: dopo una scrittura in SQL diretto va pulita, altrimenti i moduli avvisati dall'hook leggono il valore vecchio.
 
 ## Installazione
 
