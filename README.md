@@ -2,7 +2,7 @@
 
 Modulo PrestaShop 8.1 per aggiornare prezzi e quantità da un CSV, con anteprima e ritorno indietro.
 
-È una versione ridotta, scritta da zero e pubblica, dell'import che uso al lavoro (quello resta dell'azienda e non è qui).
+È una versione ridotta, scritta da zero e pubblica, dell'import che uso al lavoro (quello resta dell'azienda e non è qui). L'ho scritta a ottobre 2026 apposta per avere codice PHP da mostrare: per questo la storia dei commit è corta.
 
 ## Il problema
 
