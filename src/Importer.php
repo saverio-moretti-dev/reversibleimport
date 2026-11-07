@@ -56,14 +56,16 @@ final class Importer
 
     public function undo(int $batchId): UndoResult
     {
-        if ($this->catalog->isUndone($batchId)) {
-            throw new \RuntimeException("L'import $batchId è già stato riportato indietro.");
-        }
-
         $restored = [];
         $skipped = [];
         $this->catalog->begin();
         try {
+            // Il controllo sta dentro la transazione e blocca la riga dell'import:
+            // due ritorni indietro lanciati insieme (doppio clic, due schede) non
+            // passano entrambi.
+            if ($this->catalog->isUndone($batchId)) {
+                throw new \RuntimeException("L'import $batchId è già stato riportato indietro.");
+            }
             foreach ($this->catalog->loadSnapshot($batchId) as $change) {
                 $current = $this->catalog->currentValues($change->productId);
                 if ($current === null || !$this->same($change->field, $current[$change->field], $change->after)) {

@@ -179,9 +179,12 @@ final class PrestaShopCatalogRepository implements CatalogRepository
 
     public function isUndone(int $batchId): bool
     {
-        return (bool) $this->db->getValue(
-            'SELECT date_undone IS NOT NULL FROM `' . _DB_PREFIX_ . 'reversibleimport_batch` WHERE id_batch = ' . $batchId
+        // executeS e non getValue: getValue aggiunge «LIMIT 1» dopo il FOR UPDATE (come getRow).
+        $rows = $this->db->executeS(
+            'SELECT date_undone FROM `' . _DB_PREFIX_ . 'reversibleimport_batch` WHERE id_batch = ' . $batchId . ' FOR UPDATE'
         );
+
+        return isset($rows[0]['date_undone']);
     }
 
     /** @return array<int,array<string,mixed>> ultimi import, i più recenti prima */

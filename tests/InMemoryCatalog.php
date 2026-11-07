@@ -47,6 +47,9 @@ final class InMemoryCatalog implements CatalogRepository
 
     public function begin(): void
     {
+        if ($this->saved !== null) {
+            throw new \LogicException('transazione già aperta: manca un commit o un rollback');
+        }
         $this->saved = [$this->products, $this->batches, $this->snapshots];
     }
 
@@ -107,6 +110,10 @@ final class InMemoryCatalog implements CatalogRepository
 
     public function isUndone(int $batchId): bool
     {
+        if ($this->saved === null) {
+            throw new \LogicException('isUndone va chiamato dentro la transazione');
+        }
+
         return $this->batches[$batchId]['undone'] ?? false;
     }
 

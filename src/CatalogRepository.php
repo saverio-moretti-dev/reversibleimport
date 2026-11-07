@@ -40,5 +40,6 @@ interface CatalogRepository
 
     public function markUndone(int $batchId): void;
 
+    /** Da chiamare dentro la transazione: blocca la riga dell'import fino a commit o rollback. */
     public function isUndone(int $batchId): bool;
 }

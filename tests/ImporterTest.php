@@ -117,6 +117,23 @@ final class ImporterTest extends TestCase
         $importer->undo($batch);
     }
 
+    public function testRitornoIndietroGiaFattoNonLasciaLaTransazioneAperta(): void
+    {
+        $importer = new Importer($this->catalog);
+        $batch = $importer->apply($this->plan("sku;prezzo\nA1;12\n"), 'x.csv');
+        $importer->undo($batch);
+
+        try {
+            $importer->undo($batch);
+            self::fail('il secondo ritorno indietro doveva fermarsi');
+        } catch (\RuntimeException) {
+        }
+        // Dopo il rifiuto si può lavorare di nuovo: la transazione è stata chiusa.
+        $altro = $importer->apply($this->plan("sku;prezzo\nA1;15\n"), 'y.csv');
+        self::assertSame(15.0, $this->catalog->products[1]->price);
+        self::assertNotSame($batch, $altro);
+    }
+
     public function testPianoVuotoRifiutato(): void
     {
         $this->expectException(\InvalidArgumentException::class);
