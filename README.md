@@ -1,5 +1,7 @@
 # reversibleimport
 
+[![tests](https://github.com/saverio-moretti-dev/reversibleimport/actions/workflows/tests.yml/badge.svg)](https://github.com/saverio-moretti-dev/reversibleimport/actions/workflows/tests.yml)
+
 PrestaShop 8.1 module that updates prices and quantities from a CSV file, with a preview and an undo.
 
 It is a reduced version of the import I use at work, written from scratch for public release. The work version belongs to the company and is not here. I wrote this one in October 2026 to have PHP code I can show, which is why the commit history is short.
@@ -48,7 +50,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-Last run (7 November 2026): 21 tests, 48 assertions, green on PHP 8.1 and PHP 8.5. The unit tests do not need PrestaShop; the real-shop run below uses PHP 8.1, like PrestaShop 8.1.
+Last run (7 November 2026): 21 tests, 48 assertions, green on PHP 8.1 and PHP 8.5. GitHub Actions runs the same tests on both versions at every push. The unit tests do not need PrestaShop; the real-shop run below uses PHP 8.1, like PrestaShop 8.1.
 
 ### Run on a real PrestaShop
 

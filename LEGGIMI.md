@@ -48,7 +48,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-Ultimo esito (7 novembre 2026): 21 test, 48 controlli, verdi su PHP 8.1 e su PHP 8.5. I test unitari non hanno bisogno di PrestaShop; la prova sul negozio vero, sotto, gira su PHP 8.1 come PrestaShop 8.1.
+Ultimo esito (7 novembre 2026): 21 test, 48 controlli, verdi su PHP 8.1 e su PHP 8.5. GitHub Actions rifà gli stessi test su entrambe le versioni a ogni push. I test unitari non hanno bisogno di PrestaShop; la prova sul negozio vero, sotto, gira su PHP 8.1 come PrestaShop 8.1.
 
 ### Prova su un PrestaShop vero
 
