@@ -4,7 +4,7 @@
 
 PrestaShop 8.1 module that updates prices and quantities from a CSV file, with a preview and an undo.
 
-It is a reduced version of the import I use at work, written from scratch for public release. The work version belongs to the company and is not here. I wrote this one in October 2026 to have PHP code I can show, which is why the commit history is short.
+Personal project, built in my spare time with Claude Code. Tests use made-up data.
 
 Italian guide: [LEGGIMI.md](LEGGIMI.md).
 
