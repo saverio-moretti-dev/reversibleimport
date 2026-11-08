@@ -22,7 +22,7 @@ File format: columns `reference; price; quantity` (also accepts `riferimento`, `
 
 ## Limits
 
-- Single shop. Only products without combinations: for products with combinations the quantity is the sum of the variants and has to be handled separately. A reference shared by several products is skipped.
+- Single shop: with multistore active the module refuses to preview or write (per-shop prices and shared stock are not handled). Only products without combinations: for products with combinations the quantity is the sum of the variants and has to be handled separately. A reference shared by several products is skipped.
 - Price and quantity only.
 - Writes with direct SQL instead of `Product::save()`, so it does not rewrite the whole product or fire hooks inside a transaction that can still be rolled back. The `actionUpdateQuantity` hook fires after the commit, once per product. Other modules listening to product saves are not notified of price changes.
 - **Status:** version 0.1.0. Tested on PrestaShop 8.1.7 with the demo products (see below). Uploading the file from the back office page has not been tested in a browser yet: the page is only checked at template level.
@@ -36,7 +36,8 @@ src/Importer.php                     transactional write and undo
 src/CatalogRepository.php            what the logic needs from the catalog
 src/PrestaShopCatalogRepository.php  the PrestaShop catalog (Db, pSQL, int casts)
 controllers/admin/                   back office page (Catalog > Import reversibile)
-tests/                               tests against an in-memory catalog that simulates transactions and failures
+tests/                               tests against an in-memory catalog that simulates transactions and failures,
+                                     and the PrestaShop repository against stand-in Db/Cache/Hook classes
 ```
 
 The logic does not depend on PrestaShop: it talks to an interface. That way it can be tested without a shop, including the "failure on the third write" case.
@@ -50,7 +51,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-Last run (7 November 2026): 21 tests, 48 assertions, green on PHP 8.1 and PHP 8.5. GitHub Actions runs the same tests on both versions at every push. The unit tests do not need PrestaShop; the real-shop run below uses PHP 8.1, like PrestaShop 8.1.
+Last run (8 November 2026): 25 tests, 56 assertions, green on PHP 8.1 and PHP 8.5. GitHub Actions runs the same tests on both versions at every push. The unit tests do not need PrestaShop; the real-shop run below uses PHP 8.1, like PrestaShop 8.1.
 
 ### Run on a real PrestaShop
 

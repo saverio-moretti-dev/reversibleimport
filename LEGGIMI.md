@@ -20,7 +20,7 @@ Il file: colonne `riferimento; prezzo; quantità` (accetta anche `reference`, `s
 
 ## Limiti
 
-- Negozio singolo. Solo prodotti senza combinazioni: in quelli con combinazioni la quantità è la somma delle varianti e va gestita a parte. Un riferimento usato da più prodotti viene saltato.
+- Negozio singolo: con il multinegozio attivo il modulo rifiuta anteprima e scrittura (prezzi per negozio e stock condiviso non sono gestiti). Solo prodotti senza combinazioni: in quelli con combinazioni la quantità è la somma delle varianti e va gestita a parte. Un riferimento usato da più prodotti viene saltato.
 - Solo prezzo e quantità.
 - Scrive con SQL diretto, non con `Product::save()`, per non riscrivere l'intero prodotto e non lanciare hook dentro una transazione che può ancora essere annullata. L'hook `actionUpdateQuantity` parte dopo il commit, una volta per prodotto. Altri moduli che ascoltano il salvataggio del prodotto non vengono avvisati del cambio di prezzo.
 - **Stato:** versione 0.1.0. Provata su PrestaShop 8.1.7 con i prodotti demo (vedi sotto). Il caricamento del file dalla pagina del back office non è ancora stato provato da browser: la pagina è controllata solo nel template.
@@ -48,7 +48,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-Ultimo esito (7 novembre 2026): 21 test, 48 controlli, verdi su PHP 8.1 e su PHP 8.5. GitHub Actions rifà gli stessi test su entrambe le versioni a ogni push. I test unitari non hanno bisogno di PrestaShop; la prova sul negozio vero, sotto, gira su PHP 8.1 come PrestaShop 8.1.
+Ultimo esito (8 novembre 2026): 25 test, 56 controlli, verdi su PHP 8.1 e su PHP 8.5. GitHub Actions rifà gli stessi test su entrambe le versioni a ogni push. I test unitari non hanno bisogno di PrestaShop; la prova sul negozio vero, sotto, gira su PHP 8.1 come PrestaShop 8.1.
 
 ### Prova su un PrestaShop vero
 

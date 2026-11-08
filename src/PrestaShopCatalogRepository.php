@@ -7,6 +7,7 @@ namespace ReversibleImport;
 use Cache;
 use Db;
 use Hook;
+use Shop;
 
 /**
  * Il catalogo di PrestaShop 8.1, negozio singolo, prodotti senza combinazioni.
@@ -31,6 +32,7 @@ final class PrestaShopCatalogRepository implements CatalogRepository
 
     public function findByReferences(array $references): array
     {
+        $this->assertSingleShop();
         if ($references === []) {
             return [];
         }
@@ -69,6 +71,7 @@ final class PrestaShopCatalogRepository implements CatalogRepository
 
     public function begin(): void
     {
+        $this->assertSingleShop();
         $this->pendingQuantityHooks = [];
         $this->execute('START TRANSACTION');
     }
@@ -76,6 +79,12 @@ final class PrestaShopCatalogRepository implements CatalogRepository
     public function commit(): void
     {
         $this->execute('COMMIT');
+        // PrestaShop keeps the quantity it has read in a per-request cache: it is cleared
+        // after the commit, so that whoever reads it next (including the modules notified
+        // by the hook) gets the committed value and a rollback leaves nothing to clear.
+        foreach (array_keys($this->pendingQuantityHooks) as $productId) {
+            Cache::clean('StockAvailable::getQuantityAvailableByProduct_' . $productId . '-*');
+        }
         foreach ($this->pendingQuantityHooks as $productId => $quantity) {
             Hook::exec('actionUpdateQuantity', [
                 'id_product' => $productId,
@@ -105,9 +114,6 @@ final class PrestaShopCatalogRepository implements CatalogRepository
         $this->execute('UPDATE `' . _DB_PREFIX_ . 'stock_available` SET quantity = ' . $quantity . '
             WHERE id_product = ' . $productId . ' AND id_product_attribute = 0 AND id_shop = ' . $this->shopId);
         $this->pendingQuantityHooks[$productId] = $quantity;
-        // PrestaShop tiene la quantità letta in una cache della richiesta: senza pulirla,
-        // chi la legge dopo (anche i moduli avvisati dall'hook) vedrebbe il valore vecchio.
-        Cache::clean('StockAvailable::getQuantityAvailableByProduct_' . $productId . '-*');
     }
 
     public function createBatch(string $fileName, int $changeCount): int
@@ -197,6 +203,18 @@ final class PrestaShopCatalogRepository implements CatalogRepository
             WHERE b.id_shop = ' . $this->shopId . '
             ORDER BY b.id_batch DESC LIMIT ' . $limit
         ) ?: [];
+    }
+
+    /**
+     * Multistore is out of scope (README, Limits): there the price lives per shop in
+     * product_shop while product holds the default shop's copy, and stock can be shared
+     * by a shop group (stock_available.id_shop = 0). Refused before any read or write.
+     */
+    private function assertSingleShop(): void
+    {
+        if (Shop::isFeatureActive()) {
+            throw new \RuntimeException('reversibleimport supports a single shop only: multistore is active.');
+        }
     }
 
     private function insert(string $table, array $data): void
